@@ -1,0 +1,40 @@
+- hosts: all
+  
+  tasks:
+  - name: copy docker files from source to dest
+    copy:
+      src: /root/Dockerfile
+      dest: /root/
+
+  - name: copy war files from source to dest
+    copy:
+      src: /root/webapp.war
+      dest: /root/
+      
+  - name: setup docker
+    yum:
+      name: docker
+      state: latest
+
+  - name: start docker
+    service:
+      name: docker
+      state: started
+
+  - name: stop running container
+    command: docker stop testjencnt
+    ignore_errors: True
+    
+  - name: remove container
+    command: docker rm testjencnt
+    ignore_errors: True
+    
+  - name: remove image
+    command: docker rmi testjenimg
+    ignore_errors: True
+    
+  - name: create new image
+    command: docker build -t testjenimg .
+    
+  - name: run container
+    command: docker run -d -p 8091:8080 --name testjencnt testjenimg:latest
